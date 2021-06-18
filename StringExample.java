@@ -1,5 +1,5 @@
-// This sample code encrypts and then decrypts a string using a KMS CMK.
-// You provide the KMS key ARN and plaintext string as arguments.
+// Este código de amostra criptografa e, em seguida, descriptografa uma string usando um KMS CMK
+// Você fornece o ARN da chave KMS e a string de texto simples como argumentos
 package com.amazonaws.crypto.examples;
 
 import java.util.Collections;
@@ -19,40 +19,40 @@ public class StringExample {
         keyArn = args[0];
         data = args[1];
 
-        // Instantiate the SDK
+        // Instancie o SDK
         final AwsCrypto crypto = AwsCrypto.standard();
 
-        // Set up the master key provider
+        // Configure o provedor de chave mestra
         final KmsMasterKeyProvider prov = KmsMasterKeyProvider.builder().buildStrict(keyArn);
 
-        // Encrypt the data
+        // Criptografar os dados
         //
-        // NOTE: Encrypted data should have associated encryption context
-        // to protect integrity. For this example, just use a placeholder
-        // value. For more information about encryption context, see
+        // NOTA: Os dados criptografados devem ter um contexto de criptografia associado
+        // para proteger a integridade. Para este exemplo, basta usar um marcador
+        // valor. Para obter mais informações sobre o contexto de criptografia, consulte
         // https://amzn.to/1nSbe9X (blogs.aws.amazon.com)
         final Map<String, String> context = Collections.singletonMap("Example", "String");
 
         final String ciphertext = crypto.encryptString(prov, data, context).getResult();
         System.out.println("Ciphertext: " + ciphertext);
 
-        // Decrypt the data
+        // Descriptografar os dados
         final CryptoResult<String, KmsMasterKey> decryptResult = crypto.decryptString(prov, ciphertext);
-        // Check the encryption context (and ideally the master key) to
-        // ensure this is the expected ciphertext
+        // Verifique o contexto de criptografia (e de preferência a chave mestra) 
+        // para garantir que este seja o texto cifrado esperado        
         if (!decryptResult.getMasterKeyIds().get(0).equals(keyArn)) {
             throw new IllegalStateException("Wrong key id!");
         }
 
-        // The SDK may add information to the encryption context, so check to
-        // ensure all of the values are present
+        // O SDK pode adicionar informações ao contexto de criptografia, 
+        // portanto, verifique se todos os valores estão presentes
         for (final Map.Entry<String, String> e : context.entrySet()) {
             if (!e.getValue().equals(decryptResult.getEncryptionContext().get(e.getKey()))) {
                 throw new IllegalStateException("Wrong Encryption Context!");
             }
         }
 
-        // The data is correct, so output it.
+        // Os dados estão corretos, então imprima-os.
         System.out.println("Decrypted: " + decryptResult.getResult());
     }
 }
